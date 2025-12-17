@@ -32,7 +32,7 @@ int main(int argc, char* argv[]) {
     auto allTrades = tradeLoader.loadTrades();
     
     ScalarResults results;
-    SerialPricer pricer;
+    ParallelPricer pricer;
     pricer.price(allTrades, &results);
     
     ScreenResultPrinter screenPrinter;

@@ -1,8 +1,13 @@
 #include "SerialPricer.h"
+#include "../Pricers/GovBondPricingEngine.h"
+#include "../Pricers/CorpBondPricingEngine.h"
+#include "../Pricers/FxPricingEngine.h"
 #include <stdexcept>
+#include <memory>
 
 SerialPricer::~SerialPricer() {
-
+    // unique_ptr auto-manages cleanup
+    pricers_.clear();
 }
 
 void SerialPricer::loadPricers() {
@@ -11,7 +16,18 @@ void SerialPricer::loadPricers() {
     PricingEngineConfig pricerConfig = pricingConfigLoader.loadConfig();
     
     for (const auto& configItem : pricerConfig) {
-        throw std::runtime_error("Not implemented");
+        std::unique_ptr<IPricingEngine> engine;
+        const std::string& typeName = configItem.getTypeName();
+        if (typeName == "HmxLabs.TechTest.Pricers.GovBondPricingEngine"){
+            engine = std::make_unique<GovBondPricingEngine>();
+        } else if (typeName == "HmxLabs.TechTest.Pricers.CorpBondPricingEngine"){
+            engine = std::make_unique<CorpBondPricingEngine>();
+        } else if (typeName == "HmxLabs.TechTest.Pricers.FxPricingEngine"){
+            engine = std::make_unique<FxPricingEngine>();
+        } else {
+            throw std::runtime_error("Unknown pricing engine: " + typeName);
+        }
+        pricers_[configItem.getTradeType()] = std::move(engine);
     }
 }
 
@@ -27,7 +43,7 @@ void SerialPricer::price(const std::vector<std::vector<ITrade*>>& tradeContainer
                 continue;
             }
             
-            IPricingEngine* pricer = pricers_[tradeType];
+            IPricingEngine* pricer = pricers_[tradeType].get();
             pricer->price(trade, resultReceiver);
         }
     }

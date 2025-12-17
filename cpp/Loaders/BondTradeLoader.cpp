@@ -6,20 +6,30 @@
 #include <iomanip>
 #include <chrono>
 
-BondTrade* BondTradeLoader::createTradeFromLine(std::string line) {
+BondTrade* BondTradeLoader::createTradeFromLine(const std::string& line) {
     std::vector<std::string> items;
     std::stringstream ss(line);
     std::string item;
-    
+    /*------add separator-----*/
+    char separator = ',';
     while (std::getline(ss, item, separator)) {
+        /*------remove carriage return char-----*/
+        if (!item.empty() && item.back() == '\r') {
+            item.pop_back();
+        }
         items.push_back(item);
     }
-    
+
+
     if (items.size() < 7) {
         throw std::runtime_error("Invalid line format");
     }
-    
-    BondTrade* trade = new BondTrade(items[6]);
+    /*------add tradeType to BondTrade-----*/
+    std::string tradeType = BondTrade::GovBondTradeType;
+    if (items[0] == "CorpBond"){
+        tradeType = BondTrade::CorpBondTradeType;
+    }
+    BondTrade* trade = new BondTrade(items[6], tradeType);
     
     std::tm tm = {};
     std::istringstream dateStream(items[1]);
@@ -35,9 +45,10 @@ BondTrade* BondTradeLoader::createTradeFromLine(std::string line) {
     return trade;
 }
 
-void BondTradeLoader::loadTradesFromFile(std::string filename, BondTradeList& tradeList) {
+void BondTradeLoader::loadTradesFromFile(const std::string& filename, BondTradeList& tradeList) {
     if (filename.empty()) {
-        throw std::invalid_argument("Filename cannot be null");
+        /*------msg correction: change 'null' to 'empty' -----*/
+        throw std::invalid_argument("Filename cannot be empty");
     }
     
     std::ifstream stream(filename);

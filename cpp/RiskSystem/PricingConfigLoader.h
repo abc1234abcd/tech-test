@@ -7,6 +7,9 @@
 class PricingConfigLoader {
 private:
     std::string configFile_;
+
+    /*------add extractAttributeValue method------*/
+    std::string extractAttributeValue(const std::string& element, const std::string& attribute);
     PricingEngineConfig parseXml(const std::string& content);
     
 public:

@@ -14,7 +14,8 @@
 
 class ParallelPricer {
 private:
-    std::map<std::string, IPricingEngine*> pricers_;
+    /*------map tradeType -> pricing engine type name (factory info)------*/
+    std::map<std::string, std::string> pricerTypes_;
     std::mutex resultMutex_;
     
     void loadPricers();

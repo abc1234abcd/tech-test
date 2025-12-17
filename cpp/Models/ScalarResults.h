@@ -20,6 +20,9 @@ public:
 
     virtual void addError(const std::string& tradeId, const std::string& error) override;
 
+    /*------define getTradeIds------*/
+    const std::vector<std::string>& getTradeIds() const;
+
     class Iterator {
     public:
         using iterator_category = std::forward_iterator_tag;
@@ -29,11 +32,29 @@ public:
         using reference = ScalarResult&;
 
         Iterator() = default;
+        Iterator(const ScalarResults* parent, const std::vector<std::string>* tradeIds, size_t index)
+            : parent_(parent), tradeIds_(tradeIds), index_(index) {}
 
-        // Iterator must be constructable from ScalarResults parent
-        Iterator& operator++();
-        ScalarResult operator*() const;
-        bool operator!=(const Iterator& other) const;
+        Iterator& operator++(){
+            if (index_ < tradeIds_->size()){
+                index_++;
+            }
+            return *this;
+        };
+        ScalarResult operator*() const{
+            if(index_ >= tradeIds_->size()){
+                throw std::out_of_range("Iterator out of range");
+            }
+            const std::string& tradeId = (*tradeIds_)[index_];
+            return parent_->operator[](tradeId).value();
+        }
+        bool operator!=(const Iterator& other) const{
+            return index_!= other.index_;
+        }
+        private:
+            const ScalarResults* parent_ = nullptr;
+            const std::vector<std::string>* tradeIds_ = nullptr;
+            size_t index_ = 0;
     };
 
     Iterator begin() const;
@@ -42,6 +63,8 @@ public:
 private:
     std::map<std::string, double> results_;
     std::map<std::string, std::string> errors_;
+    mutable std::vector<std::string> tradeIds_;
+    mutable bool tradeIdsCached_ = false;
 };
 
 #endif // SCALARRESULTS_H

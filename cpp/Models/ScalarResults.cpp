@@ -28,30 +28,39 @@ bool ScalarResults::containsTrade(const std::string& tradeId) const {
     return results_.find(tradeId) != results_.end() || errors_.find(tradeId) != errors_.end();
 }
 
+/*------invalidate cache------*/
 void ScalarResults::addResult(const std::string& tradeId, double result) {
     results_[tradeId] = result;
+    tradeIdsCached_ = false;
 }
 
 void ScalarResults::addError(const std::string& tradeId, const std::string& error) {
     errors_[tradeId] = error;
+    tradeIdsCached_ = false;
 }
 
-ScalarResults::Iterator& ScalarResults::Iterator::operator++() {
-    throw std::runtime_error("Iterator not implemented");
-}
-
-ScalarResult ScalarResults::Iterator::operator*() const {
-    throw std::runtime_error("Iterator not implemented");
-}
-
-bool ScalarResults::Iterator::operator!=(const Iterator& other) const {
-    throw std::runtime_error("Iterator not implemented");
+/*------get all unique tradeIds------*/
+const std::vector<std::string>& ScalarResults::getTradeIds() const {
+    if (!tradeIdsCached_) {
+        tradeIds_.clear();
+      
+        for (const auto& pair : results_) {
+            tradeIds_.push_back(pair.first);
+        }
+        for (const auto& pair : errors_) {
+            if (std::find(tradeIds_.begin(), tradeIds_.end(), pair.first) == tradeIds_.end()) {
+                tradeIds_.push_back(pair.first);
+            }
+        }
+        tradeIdsCached_ = true;
+    }
+    return tradeIds_;
 }
 
 ScalarResults::Iterator ScalarResults::begin() const {
-    throw std::runtime_error("Not implemented");
+    return Iterator(this, &getTradeIds(), 0);
 }
 
 ScalarResults::Iterator ScalarResults::end() const {
-    throw std::runtime_error("Not implemented");
+    return Iterator(this, &getTradeIds(), getTradeIds().size());
 }

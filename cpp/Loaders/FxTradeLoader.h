@@ -9,9 +9,13 @@
 class FxTradeLoader : public ITradeLoader {
 private:
     std::string dataFile_;
-    
+
 public:
-    // NOTE: These methods are only here to allow the solution to compile prior to the test being completed.
+    /*------add 'splitLine' and 'loadTradesFromFile' methods, and FxTrade obj------*/
+    std::vector<std::string> splitLine(const std::string& line);
+    FxTrade* createTradeFromLine(const std::string& line);
+    void loadTradesFromFile(const std::string& filename, std::vector<ITrade*>& trades);
+    
     std::vector<ITrade*> loadTrades() override;
     std::string getDataFile() const override;
     void setDataFile(const std::string& file) override;
