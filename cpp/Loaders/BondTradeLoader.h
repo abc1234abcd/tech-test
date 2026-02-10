@@ -3,7 +3,6 @@
 
 #include "ITradeLoader.h"
 #include "../Models/BondTrade.h"
-#include "../Models/BondTradeList.h"
 #include <string>
 #include <vector>
 #include <memory>
@@ -14,7 +13,8 @@ private:
     std::string dataFile_;
     
     BondTrade* createTradeFromLine(const std::string& line);
-    void loadTradesFromFile(const std::string& filename, BondTradeList& tradeList);
+    // changed: loadTradesFromFile now fills a vector of raw ITrade* (ownership transferred to caller)
+    void loadTradesFromFile(const std::string& filename, std::vector<ITrade*>& trades);
     
 public:
     std::vector<ITrade*> loadTrades() override;

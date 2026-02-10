@@ -37,6 +37,20 @@ int main(int argc, char* argv[]) {
     
     ScreenResultPrinter screenPrinter;
     screenPrinter.printResults(results);
+    // cleanup: delete all trades to avoid memory leaks. Ownership of trades is transferred from loaders
+    for (auto& tradeContainer : allTrades) {
+        for (ITrade* trade : tradeContainer) {
+            delete trade;
+        }
+    }
+    allTrades.clear();
+
+    //cleanup
+    for (auto& tradeContainer : allTrades){
+        for (auto trade : tradeContainer){
+            delete trade;
+        }
+    }
     
     std::cout << "Press any key to exit.." << std::endl;
     _getch();

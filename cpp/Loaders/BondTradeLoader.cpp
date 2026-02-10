@@ -45,9 +45,9 @@ BondTrade* BondTradeLoader::createTradeFromLine(const std::string& line) {
     return trade;
 }
 
-void BondTradeLoader::loadTradesFromFile(const std::string& filename, BondTradeList& tradeList) {
+// changed: now fills the provided vector with owned pointers (caller must delete)
+void BondTradeLoader::loadTradesFromFile(const std::string& filename, std::vector<ITrade*>& trades) {
     if (filename.empty()) {
-        /*------msg correction: change 'null' to 'empty' -----*/
         throw std::invalid_argument("Filename cannot be empty");
     }
     
@@ -60,21 +60,18 @@ void BondTradeLoader::loadTradesFromFile(const std::string& filename, BondTradeL
     std::string line;
     while (std::getline(stream, line)) {
         if (lineCount == 0) {
+            // skip header
         } else {
-            tradeList.add(createTradeFromLine(line));
+            trades.push_back(createTradeFromLine(line));
         }
         lineCount++;
     }
 }
 
 std::vector<ITrade*> BondTradeLoader::loadTrades() {
-    BondTradeList tradeList;
-    loadTradesFromFile(dataFile_, tradeList);
-    
     std::vector<ITrade*> result;
-    for (size_t i = 0; i < tradeList.size(); ++i) {
-        result.push_back(tradeList[i]);
-    }
+    loadTradesFromFile(dataFile_, result);
+    // ownership of returned pointers is transferred to the caller; caller must delete them
     return result;
 }
 
